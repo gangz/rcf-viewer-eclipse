@@ -78,5 +78,30 @@
          </toolbar>
       </menuContribution>
    </extension>
-
+	<extension
+         point="org.eclipse.ui.views">
+      <category
+            name="Clone"
+            id="clone">
+      </category>
+      <view
+            name="Clone Pair List"
+            icon="icons/sample.gif"
+            category="clone"
+            class="rcfviewer.views.ClonePairView"
+            id="rcfviewer.views.ClonePairView">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="org.eclipse.jdt.ui.JavaPerspective">
+         <view
+               ratio="0.5"
+               relative="org.eclipse.ui.views.ProblemView"
+               relationship="right"
+               id="rcfviewer.views.ClonePairView">
+         </view>
+      </perspectiveExtension>
+   </extension>
 </plugin>
