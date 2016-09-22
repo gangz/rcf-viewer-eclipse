@@ -4,17 +4,24 @@ package rcfviewer.views;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.*;
 
 import de.uni_bremen.st.rcf.model.ClonePair;
 import de.uni_bremen.st.rcf.model.Fragment;
 import de.uni_bremen.st.rcf.model.RCF;
 import de.uni_bremen.st.rcf.model.Version;
+import rcfviewer.clonepaircompare.ClonePairViewerInput;
+import rcfviewer.editors.FilePairViewer;
 import rcfviewer.model.RcfDataReader;
 
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.graphics.Image;
 
+import java.util.HashMap;
 import java.util.List;
 
 import org.eclipse.jface.action.*;
@@ -33,6 +40,8 @@ public class ClonePairView extends ViewPart {
 	private Action doubleClickAction;
 	
 	List<ClonePair> clonePairs;
+
+	private ClonePairViewerInput clonePairInput;
 	 
 /**
 	 * The constructor.
@@ -81,11 +90,36 @@ public class ClonePairView extends ViewPart {
 		//PlatformUI.getWorkbench().getHelpSystem().setHelp(viewer.getControl(), "test.viewer");
 		makeActions();
 		hookDoubleClickAction();
-
-		
+		//createClonePairView
+		loadClonePairView();
 	}
 
-
+	private void loadClonePairView() {
+		FilePairViewer editor = new FilePairViewer();
+		IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+		clonePairInput = new ClonePairViewerInput();
+		try {
+			page.openEditor(clonePairInput, "rcfviewer.editors.FilePairViewer");
+		} catch (PartInitException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void refreshClonePairView(ClonePair clonePair) {
+		FilePairViewer editor = new FilePairViewer();
+		
+		IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+		page.closeEditor(clonePairInput.getAssociatedEitorPart(), false);
+		clonePairInput = new ClonePairViewerInput();
+		clonePairInput.setClonePair(clonePair);
+		try {
+			page.openEditor(clonePairInput, "rcfviewer.editors.FilePairViewer");
+		} catch (PartInitException e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
 	private void makeActions() {
 		doubleClickAction = new Action() {
 			public void run() {
@@ -93,10 +127,14 @@ public class ClonePairView extends ViewPart {
 				Object obj = ((IStructuredSelection)selection).getFirstElement();
 				if (obj instanceof ClonePair){
 					ClonePair clonePair = (ClonePair)obj;
-					showMessage("Double-click detected on "+clonePair.getId());
+					refreshClonePairView(clonePair);
 				}else
 					showMessage("Double-click detected on "+obj.toString());
 			}
+
+
+
+			
 		};
 	}
 

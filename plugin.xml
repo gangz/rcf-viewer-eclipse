@@ -104,4 +104,14 @@
          </view>
       </perspectiveExtension>
    </extension>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            name="Clone Pair File Viewer"
+            extensions="clonepair"
+            icon="icons/sample.gif"
+            class="rcfviewer.editors.FilePairViewer"
+            id="rcfviewer.editors.FilePairViewer">
+      </editor>
+   </extension>   
 </plugin>
