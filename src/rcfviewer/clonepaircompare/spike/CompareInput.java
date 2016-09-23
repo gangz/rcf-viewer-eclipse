@@ -1,4 +1,4 @@
-package rcfviewer.clonepaircompare;
+package rcfviewer.clonepaircompare.spike;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;

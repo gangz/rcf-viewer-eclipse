@@ -5,7 +5,7 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 
-import rcfviewer.clonepaircompare.CompareInput;
+import rcfviewer.clonepaircompare.spike.CompareInput;
 
 public class ShowDiffExample extends AbstractHandler {
 

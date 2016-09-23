@@ -2,9 +2,12 @@ package rcfviewer.views;
 
 
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -21,6 +24,7 @@ import rcfviewer.model.RcfDataReader;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.graphics.Image;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 
@@ -42,16 +46,15 @@ public class ClonePairView extends ViewPart {
 	List<ClonePair> clonePairs;
 
 	private ClonePairViewerInput clonePairInput;
-	 
+	String rcfFilePath = "/home/gangz/00quick/clone/bellon_benchmark/bellon_benchmark/netbeans-javadoc.rcf";
+
+	private IAction loadFileAction;
+	
 /**
 	 * The constructor.
 	 */
 	public ClonePairView() {
-		String rcfFilePath = "/home/gangz/00quick/clone/bellon_benchmark/bellon_benchmark/netbeans-javadoc.rcf";
-		RcfDataReader r = new RcfDataReader(rcfFilePath);
-		RCF rcf = r.getRcf();
-		Version version = rcf.getVersions().getFirstEntry();
-		clonePairs = version.getClonePairs();
+
 	}
 	public static final int COL_CLONEPAIR_ID = 0;
 	public static final int COL_FRAGMENT_LEFT = 1;
@@ -88,10 +91,35 @@ public class ClonePairView extends ViewPart {
 
 		// Create the help context id for the viewer's control
 		//PlatformUI.getWorkbench().getHelpSystem().setHelp(viewer.getControl(), "test.viewer");
-		makeActions();
+		makeActions(parent);
 		hookDoubleClickAction();
+		contributeToActionBars();
 		//createClonePairView
 		loadClonePairView();
+		
+	}
+	
+	private void contributeToActionBars() {
+		IActionBars bars = getViewSite().getActionBars();
+		fillLocalPullDown(bars.getMenuManager());
+		fillLocalToolBar(bars.getToolBarManager());
+	}
+
+	private void fillLocalToolBar(IToolBarManager toolBarManager) {
+		toolBarManager.add(loadFileAction);
+	}
+
+	private void fillLocalPullDown(IMenuManager menuManager) {
+		menuManager.add(loadFileAction);
+	}
+
+	private void loadRcfFile(){
+		RcfDataReader r = new RcfDataReader(rcfFilePath);
+		RCF rcf = r.getRcf();
+		Version version = rcf.getVersions().getFirstEntry();
+		clonePairs = version.getClonePairs();
+		viewer.setInput(clonePairs);
+		viewer.refresh();
 	}
 
 	private void loadClonePairView() {
@@ -120,7 +148,7 @@ public class ClonePairView extends ViewPart {
 		
 	}
 	
-	private void makeActions() {
+	private void makeActions(Composite parent) {
 		doubleClickAction = new Action() {
 			public void run() {
 				ISelection selection = viewer.getSelection();
@@ -131,11 +159,21 @@ public class ClonePairView extends ViewPart {
 				}else
 					showMessage("Double-click detected on "+obj.toString());
 			}
-
-
-
-			
 		};
+		
+		loadFileAction = new Action(){
+			public void run(){
+				FileDialog fileDialog = new FileDialog(parent.getShell());
+				fileDialog.open();
+				rcfFilePath = fileDialog.getFilterPath() + File.separator + fileDialog.getFileName();
+				loadRcfFile();
+			}
+		};
+		loadFileAction.setText("Load RCF");
+		loadFileAction.setToolTipText("Load RCF file");
+		loadFileAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
+				getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
+
 	}
 
 	private void hookDoubleClickAction() {
