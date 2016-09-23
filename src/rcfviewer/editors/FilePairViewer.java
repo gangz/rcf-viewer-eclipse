@@ -62,7 +62,6 @@ public class FilePairViewer extends EditorPart {
 		rightFormPosition.right = new FormAttachment(100, -5);
 		
 		StyledText leftTextEditor = new StyledText(shell,SWT.MULTI | SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
-		//Text leftTextEditor = new Text(shell, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
 		leftTextEditor.setLayoutData(leftFormPosition);
 		loadFragment(leftTextEditor, leftFragment);
 
@@ -82,6 +81,7 @@ public class FilePairViewer extends EditorPart {
 		editor.setForeground(new Color(editor.getDisplay(),0,0,255));
 		
 		String filename = fragment.getStart().getFile().getAbsolutePath();
+		
 		String content;
 		try {
 			content = readFromFile(filename);

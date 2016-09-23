@@ -1,7 +1,13 @@
 package rcfviewer.clonepaircompare.spike;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 
 import org.eclipse.compare.CompareConfiguration;
@@ -15,29 +21,51 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.graphics.Image;
 
+import de.uni_bremen.st.rcf.model.ClonePair;
+import de.uni_bremen.st.rcf.model.Fragment;
+
 public class CompareInput extends CompareEditorInput {
+	private String rightContent = "";
+	private String leftConent = "";
+
 	public CompareInput() {
 		super(new CompareConfiguration());
 	}
 
 	@Override
 	protected Object prepareInput(IProgressMonitor arg0) throws InvocationTargetException, InterruptedException {
-		String contents="";
-		for (int i=0;i<100;i++){
-			contents += "contents\n";
+		CompareItem left = new CompareItem("Left", leftConent,0);
+		CompareItem right = new CompareItem("Right", rightContent,0);
+		DiffNode diffNode = new DiffNode(left, right);
+		return diffNode;
+	}
+
+	public void loadClonePair(ClonePair clonePair) {
+		try {
+			rightContent=readContent(clonePair.getRight());
+			leftConent = readContent(clonePair.getLeft());
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		String newContents="";
-		for (int i=0;i<100;i++){
-			newContents += "bew contents\n";
+	}
+
+	private String readContent(Fragment fragment) throws IOException {
+		int currentLine = 0;
+		StringBuffer s = new StringBuffer();
+		FileInputStream fis = new FileInputStream(new File(fragment.getStart().getFile().getAbsolutePath()));
+		BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+		String line = null;
+		while ((line = br.readLine()) != null) {
+			currentLine++;
+			if (currentLine>=fragment.getStart().getLine() &&
+					currentLine<=fragment.getEnd().getLine()){
+				s.append(line);
+				s.append('\n');
+			}
 		}
-		String oldContents="";
-		for (int i=0;i<100;i++){
-			oldContents += "old contents\n";
-		}
-		CompareItem ancestor = new CompareItem("Common", contents, 0);
-		CompareItem left = new CompareItem("Left", newContents,0);
-		CompareItem right = new CompareItem("Right", oldContents,0);
-		return new DiffNode(null, Differencer.NO_CHANGE, ancestor, left, right);
+	 
+		br.close();
+		return s.toString();
 	}
 }
 class CompareItem implements IStreamContentAccessor, ITypedElement, IModificationDate {
