@@ -81,13 +81,12 @@ public class FilePairViewer extends EditorPart {
 		editor.setForeground(new Color(editor.getDisplay(),0,0,255));
 		
 		String filename = fragment.getStart().getFile().getAbsolutePath();
-		
 		String content;
 		try {
 			content = readFromFile(filename);
 			editor.setText(content);
 			Document doc = new Document(content);
-			editor.setSelection(doc.getLineOffset(fragment.getStart().getLine()), 
+			editor.setSelection(doc.getLineOffset(fragment.getStart().getLine()-1), 
 					doc.getLineOffset(fragment.getEnd().getLine()));
 			editor.setTopIndex(fragment.getStart().getLine());
 		} catch (Exception e) {

@@ -1,7 +1,9 @@
 package rcfviewer.views;
 
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.IActionBars;
@@ -24,6 +26,9 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.graphics.Image;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.eclipse.compare.CompareUI;
@@ -81,11 +86,39 @@ public class ClonePairView extends ViewPart {
 		newColumnTableColumns[COL_FRAGMENT_LEFT] = new TableColumn(table, SWT.NONE);
 		newColumnTableColumns[COL_FRAGMENT_LEFT].setWidth(120);
 		newColumnTableColumns[COL_FRAGMENT_LEFT].setText("Left");
+		newColumnTableColumns[COL_FRAGMENT_LEFT].addListener(SWT.Selection, new Listener(){
+			@Override
+			public void handleEvent(Event e) {
+				Collections.sort(clonePairs,new Comparator<ClonePair>(){
+					@Override
+					public int compare(ClonePair o1, ClonePair o2) {
+						String d1 = composeFragmentDesc(o1.getLeft());
+						String d2 = composeFragmentDesc(o2.getLeft());
+						return d1.compareTo(d2);
+					}
+				});
+				updateTable();
+			}
+		});
 
 		newColumnTableColumns[COL_FRAGMENT_RIGHT] = new TableColumn(table, SWT.NONE);
 		newColumnTableColumns[COL_FRAGMENT_RIGHT].setWidth(120);
 		newColumnTableColumns[COL_FRAGMENT_RIGHT].setText("Right");
+		newColumnTableColumns[COL_FRAGMENT_RIGHT].addListener(SWT.Selection, new Listener(){
+			@Override
+			public void handleEvent(Event e) {
+				Collections.sort(clonePairs,new Comparator<ClonePair>(){
+					@Override
+					public int compare(ClonePair o1, ClonePair o2) {
+						String d1 = composeFragmentDesc(o1.getRight());
+						String d2 = composeFragmentDesc(o2.getRight());
+						return d1.compareTo(d2);
+					}
+				});
+				updateTable();
+			}
 
+		});
 		viewer.setContentProvider(new ContentProvider());
 		viewer.setLabelProvider(new TableLabelProvider());
 		viewer.setInput(clonePairs);
@@ -126,6 +159,10 @@ public class ClonePairView extends ViewPart {
 		viewer.refresh();
 	}
 
+	private void updateTable() {
+		viewer.setInput(clonePairs);
+		viewer.refresh();
+	}
 	private void loadClonePairView() {
 		FilePairViewer editor = new FilePairViewer();
 		IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
@@ -152,13 +189,8 @@ public class ClonePairView extends ViewPart {
 		} catch (PartInitException e) {
 			e.printStackTrace();
 		}
-		compareInput.loadClonePair(clonePair);
-//		try {
-//			compareInput.run(null);
-//		} catch (InvocationTargetException | InterruptedException e) {
-//			e.printStackTrace();
-//		}
-		CompareUI.openCompareEditor(compareInput,true);
+//		compareInput.loadClonePair(clonePair);
+//		CompareUI.openCompareEditor(compareInput,true);
 	}
 
 	private void makeActions(Composite parent) {
@@ -227,22 +259,25 @@ public class ClonePairView extends ViewPart {
 			}
 		}
 
-		private String composeFragmentDesc(Fragment fragment) {
-			String filenameStart = fragment.getStart().getFile().getRelativePath();
-			int startLine = fragment.getStart().getLine();
-			int endLine = fragment.getEnd().getLine();
-			String fileNameEnd = fragment.getEnd().getFile().getRelativePath();
-			if (fileNameEnd.equals(filenameStart)) {
-				return filenameStart + "(" + startLine + "," + endLine + ")";
-			}
-			return filenameStart + "(" + startLine + ")," + fileNameEnd + "(" + endLine + ")";
-		}
 
 		public Image getColumnImage(Object element, int columnIndex) {
 			return null;
 		}
 	}
-
+	private String composeFragmentDesc(Fragment fragment) {
+		String filenameStart = fragment.getStart().getFile().getRelativePath();
+		String basePath = fragment.getVersion().getBasepath();
+		if (filenameStart.startsWith(basePath)){
+			filenameStart = filenameStart.substring(basePath.length());
+		}
+		int startLine = fragment.getStart().getLine();
+		int endLine = fragment.getEnd().getLine();
+		String fileNameEnd = fragment.getEnd().getFile().getRelativePath();
+		if (fileNameEnd.equals(filenameStart)) {
+			return filenameStart + "(" + startLine + "," + endLine + ")";
+		}
+		return filenameStart + "(" + startLine + ")," + fileNameEnd + "(" + endLine + ")";
+	}
 	class ContentProvider implements IStructuredContentProvider {
 		public Object[] getElements(Object inputElement) {
 			if (inputElement instanceof List) {

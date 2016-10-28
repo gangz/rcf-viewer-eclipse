@@ -52,7 +52,9 @@ public class CompareInput extends CompareEditorInput {
 	private String readContent(Fragment fragment) throws IOException {
 		int currentLine = 0;
 		StringBuffer s = new StringBuffer();
-		FileInputStream fis = new FileInputStream(new File(fragment.getStart().getFile().getAbsolutePath()));
+		
+		String filename = fragment.getStart().getFile().getRelativePath();
+		FileInputStream fis = new FileInputStream(new File(filename ));
 		BufferedReader br = new BufferedReader(new InputStreamReader(fis));
 		String line = null;
 		while ((line = br.readLine()) != null) {
